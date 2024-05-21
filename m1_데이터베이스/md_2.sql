@@ -19,6 +19,11 @@ WHERE price >=10000 AND price <=20000;
 SELECT * FROM book
 WHERE price BETWEEN 10000 AND 20000;
 
+
+
+
+
+
 --Task1_0517. 출판사가 ‘굿스포츠’ 혹은 ‘대한미디어’ 인 도서를 검색하시오.(3가지 방법)
 SELECT * FROM book
 WHERE (publisher='굿스포츠') OR (publisher='대한미디어');
@@ -30,19 +35,22 @@ WHERE publisher IN ('굿스포츠', '대한미디어');
 SELECT *
 FROM book
 WHERE  publisher = '굿스포츠'
-UNION
+UNION 
 SELECT *
 FROM book
 WHERE  publisher = '대한미디어';
 
 --Task2_0517. 출판사가 ‘굿스포츠’ 혹은 ‘대한미디어’ 가 아닌 도서를 검색
+select * from book where publisher not in ('굿스포츠','대한미디어');
 
 --LIKE는 정확히 '축구의 역사'와 일치하는 행만 선택
 SELECT bookname, publisher FROM book
 WHERE bookname LIKE '축구의 역사';
 
+--%: 0개 이상의 임의의 문자
+--_: 정확히 1개의 임의의 문자
 --‘축구’ 가 포함된 출판사
-SELECT bookname, publisher FROM book
+SELECT bookname, publisher, price FROM book
 WHERE bookname LIKE '%축구%';
 
 --도서이름의 왼쪽 두 번째 위치에 ‘구’라는 문자열을 갖는 도서
@@ -95,13 +103,14 @@ WHERE bookid > 5
 GROUP BY custid
 HAVING COUNT(*) > 2;
 
---Task4_0517. 2번 김연아 고객이 주문한 도서의 총 판매액을 구하시오.
-select customer.name, orders.custid, sum(orders.saleprice)
+select * from orders;
+--Task4_0517. 2번 김연아 고객이 주문한 도서의 수량과 총 판매액을 구하시오.
+select customer.name, orders.custid, count(orders.orderid) AS "도서 수량", sum(orders.saleprice) AS "총 판매액"
 from orders, customer
 where orders.custid = 2 and orders.custid=customer.custid
 group by customer.name, orders.custid;
 
-select customer.name, orders.custid, sum(orders.saleprice)
+select customer.name, orders.custid, count(orders.orderid) "도서 수량", sum(orders.saleprice) "총 판매액"
 from orders
 inner join customer on orders.custid = customer.custid
 where orders.custid = 2
@@ -113,7 +122,8 @@ SELECT custid, COUNT(*) AS 도서수량
 FROM orders
 WHERE saleprice >= 8000
 GROUP BY custid
-HAVING COUNT(*) >= 2;
+HAVING COUNT(*) >= 2
+ORDER BY custid;
 
 --Task6_0517. 고객의 이름과 고객이 주문한 도서의 판매가격을 검색하시오.
 SELECT name, saleprice
@@ -158,6 +168,8 @@ FROM orders x
 WHERE bookid IN (SELECT BOOKID FROM BOOK WHERE price = 20000)
 ORDER BY custid;
 
+select * from customer;
+select * from orders;
 --JOIN은 두 개 이상의 테이블을 연결하여 관련된 데이터를 결합할 때 사용
 --내부 조인 (Inner Join)
 SELECT customer.name,orders.saleprice
@@ -172,7 +184,8 @@ LEFT OUTER JOIN orders ON customer.custid=orders.custid;
 --오른쪽 외부 조인 (Right Outer Join) : 첫 번째 테이블에 일치하는 데이터가 없는 경우 NULL 값이 사용
 SELECT customer.name,orders.saleprice
 FROM customer 
-RIGHT OUTER JOIN orders ON customer.custid=orders.custid;
+RIGHT OUTER JOIN 
+orders ON customer.custid=orders.custid;
 
 --FULL OUTER JOIN : 일치하는 데이터가 없는 경우 해당 테이블에서는 NULL 값이 사용
 SELECT customer.name,orders.saleprice
@@ -194,8 +207,8 @@ SELECT customer.name,orders.saleprice
 FROM customer LEFT OUTER JOIN orders ON customer.custid=orders.custid;
 
 --부속 질의
-SELECT * FROM book;
-SELECT * FROM orders;
+SELECT * FROM customer;
+SELECT CUSTID FROM orders;
 --Q. 도서를 구매한 적이 있는 고객의 이름을 검색하시오.
 SELECT name
 FROM customer
@@ -204,43 +217,129 @@ WHERE custid IN (SELECT custid FROM orders);
 --Q. ‘대한미디어’에서 출판한 도서를 구매한 고객의 이름을 보이시오.
 SELECT name
 FROM customer
-WHERE custid IN(SELECT custid FROM orders
-WHERE bookid IN(SELECT bookid FROM book
+WHERE custid IN (SELECT custid FROM orders
+WHERE bookid IN (SELECT bookid FROM book
 WHERE publisher = '대한미디어'));
 
 --Q. 출판사별로 출판사의 평균 도서 가격보다 비싼 도서를 구하시오.
 SELECT b1.bookname
 FROM book b1
 WHERE b1.price > (SELECT avg(b2.price)
-FROM book b2 
+FROM book b2
 WHERE b2.publisher = b1.publisher);
 
 --Q. 도서를 주문하지 않은 고객의 이름을 보이시오.
 SELECT name
 FROM customer
-MINUS
-SELECT name
-FROM customer
-WHERE custid IN(SELECT custid FROM orders);
-
-SELECT name
-FROM customer
-WHERE custid NOT IN(SELECT custid FROM orders);
+WHERE custid NOT IN (SELECT custid FROM orders);
 
 --Q. 주문이 있는 고객의 이름과 주소를 보이시오.
-SELECT name AS 고객의이름, address AS 고객의주소
+SELECT name "고객 이름", address "고객 주소"
 FROM customer
 WHERE custid IN (SELECT custid FROM orders);
+
+--DML 연습
+--Task2_0520. Customer 테이블에서 박세리 고객의 주소를 김연아 고객의 주소로 변경하시오.
+select * from customer;
+UPDATE customer
+SET address = (
+    SELECT address
+    FROM customer
+    WHERE name = '김연아'
+)
+WHERE name = '박세리';
+
+--확인
+select * from customer;
+
+--다시 부산으로 변경
+update customer
+set address = '대한민국 부산'
+where name ='박세리';
+
+--절대값
+SELECT ABS(-78), ABS(+78)
+FROM dual;
+
+--반올림
+SELECT ROUND(4.875, 1)
+FROM dual;
+ 
+--Q. 고객별 평균 주문 금액을 백원 단위로 반올림한 값을 구하시오.
+SELECT * FROM orders;
+SELECT custid AS 고객번호, ROUND(AVG(saleprice), -2) AS 평균주문금액
+FROM orders
+GROUP BY custid;
+
+--Task3_0520.도서 제목에 ‘야구’가 포함된 도서를 ‘농구’로 변경한 후 도서 목록, 가격을 보이시오.
+SELECT bookid, REPLACE(bookname, '야구','농구') bookname, publisher, price
+FROM book;
+
+--Q.‘굿스포츠’에서 출판한 도서의 제목과 제목의 글자 수, 바이트 수를 보이시오.
+SELECT bookname 제목, length(bookname) 글자수, lengthb(bookname) 바이트수
+FROM book
+WHERE publisher = '굿스포츠';
+
+--Task4_0520. 마당서점의 고객 중에서 같은 성(姓)을 가진 사람이 몇 명이나 되는지 성별 인원수를 구하시오.
+--substr(name, 1, 1) 함수는 문자열 name의 첫 번째 글자부터 시작하여 한 글자를 반환
+--GROUP BY 절에서는 별칭이 아닌 substr(name,1,1) 표현식을 사용해야 함
+select * from customer;
+select substr(name,1,1) 성, count(*) 인원
+from customer
+group by substr(name,1,1);
+
+--Task5_0520. 마당서점은 주문일로부터 10일 후 매출을 확정한다. 각 주문의 확정일자를 구하시오.
+select * from orders;
+SELECT orderid, orderdate AS 주문일, orderdate + 62 AS 확정일자
+FROM orders;
+
+--Q. 마당서점은 주문일로부터 2개월 후 매출을 확정한다. 각 주문의 확정일자를 구하시오.
+SELECT orderid, orderdate AS 주문일, ADD_MONTHS(orderdate, 2) AS 확정일자
+FROM orders;
+
+--Task6_0520. 마당서점이 2020년 7월 7일에 주문받은 도서의 주문번호, 주문일, 고객번호, 도서번호를 모두 보이시오. 
+--단 주문일은 ‘yyyy-mm-dd 요일’ 형태로 표시한다.
+SELECT orderid 주문번호, orderdate, TO_CHAR(orderdate, 'YYYY-mm-dd day') 주문일, custid 고객번호, bookid 도서번호
+FROM orders
+WHERE orderdate = '2020-07-07';
+--WHERE orderdate = TO_DATE('20/07/07', 'YY/MM/DD');
+--WHERE orderdate = TO_DATE('20/07/24', 'DD/MM/YY');
+desc orders;
+
+--Task7_0520. 평균 주문금액 이하의 주문에 대해서 주문번호와 금액을 보이시오.
+select orderid, saleprice
+from orders
+where saleprice < (select avg(saleprice) from orders);
+
+SELECT O1.ORDERID, O1.SALEPRICE 
+FROM ORDERS O1
+WHERE O1.SALEPRICE < (SELECT AVG(O2.SALEPRICE)
+FROM ORDERS O2);
+
+--서브쿼리를 o2라는 별칭으로 지정, saleprice의 평균 값을 avg_saleprice로 계산
+SELECT o1.orderid, o1.saleprice
+FROM orders o1
+JOIN (SELECT AVG(saleprice) AS avg_saleprice FROM orders) o2 
+ON o1.saleprice < o2.avg_saleprice;
+
+--Task8_0520. 대한민국’에 거주하는 고객에게 판매한 도서의 총 판매액을 구하시오.
+SELECT SUM(saleprice) AS 총판매액
+FROM orders
+WHERE custid IN (SELECT custid FROM customer WHERE address LIKE '%대한민국%');
 
 --데이터 타입
 --숫자형 (Numeric Types)
 --NUMBER: 가장 범용적인 숫자 데이터 타입. 정수, 실수, 고정 소수점, 부동 소수점 수를 저장
+--NUMBER는 NUMBER(38,0)와 같은 의미로 해석, Precision 38은 자릿수, Scale 0은 소수점 이하 자릿수 
+--NUMBER(10), NUMBER(8,2) 
 --문자형 (Character Types)
---VARCHAR2(size): 가변 길이 문자열을 저장. size는 최대 문자 길이를 바이트로 지정
+--VARCHAR2(size): 가변 길이 문자열을 저장. size는 최대 문자 길이를 바이트, 혹은 글자수로 지정
 --NVARCHAR2(size)의 사이즈를 지정할 때는 바이트 단위 대신 항상 문자 단위로 크기가 지정
 --CHAR(size): 고정 길이 문자열을 저장. 지정된 길이보다 짧은 문자열이 입력되면 나머지는 공백으로 채워짐
 --날짜 및 시간형 (Date and Time Types)
 --DATE: 날짜와 시간을 저장. 데이터 타입은 년, 월, 일, 시, 분, 초를 포함
+--DATE 타입은 날짜와 시간을 YYYY-MM-DD HH24:MI:SS 형식으로 저장합니다.
+--예를 들어, 2024년 5월 20일 오후 3시 45분 30초는 2024-05-20 15:45:30으로 저장
 --TIMESTAMP: 날짜와 시간을 더 상세히 나노초 단위까지 저장
 --이진 데이터형 (Binary Data Types)
 --BLOB: 대량의 이진 데이터를 저장. 이미지, 오디오 파일 등을 저장하는 데 적합
@@ -248,10 +347,37 @@ WHERE custid IN (SELECT custid FROM orders);
 --CLOB: 대량의 문자 데이터를 저장
 --NCLOB: 대량의 국가별 문자 집합 데이터를 저장
 
+--문자 인코딩의 의미
+--컴퓨터는 숫자로 이루어진 데이터를 처리. 인코딩을 통해 문자(예: 'A', '가', '?')를 
+--숫자(코드 포인트)로 변환하여 컴퓨터가 이해하고 저장할 수 있게 한다.
+--예를 들어, ASCII 인코딩에서는 대문자 'A'를 65로, 소문자 'a'를 97로 인코딩. 
+--유니코드 인코딩에서는 'A'를 U+0041, 한글 '가'를 U+AC00, 이모티콘 '?'를 U+1F60A로 인코딩
+--아스키는 7비트를 사용하여 총 128개의 문자를 표현하는 반면 유니코드는 최대 1,114,112개의 문자를 표현
+
+--ASCII 인코딩:
+--문자 'A' -> 65 (10진수) -> 01000001 (2진수)
+--문자 'B' -> 66 (10진수) -> 01000010 (2진수)
+
+--유니코드(UTF-8) 인코딩: 
+--문자 'A' -> U+0041 -> 41 (16진수) -> 01000001 (2진수, ASCII와 동일)
+--문자 '가' -> U+AC00 -> EC 95 80 (16진수) -> 11101100 10010101 10000000 (2진수)
+
+--CLOB: CLOB은 일반적으로 데이터베이스의 기본 문자 집합(예: ASCII, LATIN1 등)을 사용하여 텍스트 데이터를 저장. 
+--이 때문에 주로 영어와 같은 단일 바이트 문자로 이루어진 텍스트를 저장하는 데 사용.
+--NCLOB: NCLOB은 유니코드(UTF-16)를 사용하여 텍스트 데이터를 저장. 따라서 다국어 지원이 필요할 때, \
+--즉 다양한 언어로 구성된 텍스트 데이터를 저장할 때 적합. 다국어 문자가 포함된 데이터를 효율적으로 처리할 수 있다.
+
+--VARCHAR2는 두 가지 방식으로 길이를 정의 : 바이트와 문자
+--설정 확인 방법
+SELECT *
+FROM v$nls_parameters
+WHERE parameter = 'NLS_LENGTH_SEMANTICS';
+
 --제약조건 : 
 --PRIMARY KEY : 각 행을 고유하게 식별하는 열(또는 열들의 조합). 중복되거나 NULL 값을 허용하지 않는다.
 --FOREIGN KEY : 다른 테이블의 기본 키를 참조하는 열. 참조 무결성을 유지
 --UNIQUE : 열에 중복된 값이 없어야 함을 지정. NULL값이 허용
+
 --NOT NULL : 열에 NULL 값을 허용하지 않는다.
 --CHECK : 열 값이 특정 조건을 만족해야 함을 지정 (예: age > 18)
 --DEFAULT : 열에 명시적인 값이 제공되지 않을 경우 사용될 기본값을 지정
@@ -277,6 +403,19 @@ CREATE TABLE newbook (
     PRIMARY KEY(bookid)
 ); 
 
+INSERT INTO newbook VALUES (1, 9781234567890, 'SQL Guide', 'John Doe', 'TechBooks', 15000, 
+TO_DATE('2024-05-20', 'YYYY-MM-DD'));
+
+SELECT * FROM newbook;
+ALTER TABLE newbook MODIFY (isbn VARCHAR2(50));
+DELETE FROM newbook;
+
+INSERT INTO newbook VALUES (2, 9781234567890, 'SQL Guide', 'John Doe', 'TechBooks', 15000, 
+TO_DATE('2024-05-20 15:45:30', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO newbook VALUES (3, 9781234567890000023, 'SQL Guide', 'John Doe', 'TechBooks', 15000, 
+TO_DATE('2024-05-20 15:45:30', 'YYYY-MM-DD HH24:MI:SS'));
+
 DESC NEWBOOK;
 --테이블 제약조건 수정, 추가, 속성 추가, 삭제, 수정
 ALTER TABLE newbook MODIFY (isbn VARCHAR2(10));
@@ -298,16 +437,27 @@ bookid NUMBER NOT NULL,
 saleprice NUMBER,
 orderdate DATE,
 PRIMARY KEY(orderid),
-FOREIGN KEY(custid) REFERENCES newcustomer(custid) ON DELETE CASCADE);
+FOREIGN KEY(custid) REFERENCES newcustomer(custid) ON DELETE CASCADE
+);
+
 DESC  NEWORDERS;
 
---Q. 10개의 속성으로 구성되는 테이블 2개를 작성하세요. 단 FOREIGN KEY를 적용하여 한쪽 테이블의 데이터를 삭제 시 다른 테이블의
---관련되는 데이터도 모두 삭제되도록 하세요. (모든 제약조건을 사용)
---단, 각 테이블에 5개의 데이터를 입력하고 두번째 테이블에 첫번째 데이터를 참조하고 있는 속성을 선택하여 데이터 삭제 
+INSERT INTO newcustomer VALUES(1,'KEVIN','역삼동','010-1234-1234');
+INSERT INTO neworders VALUES(10,1,100,1000,SYSDATE);
 
+SELECT * FROM newcustomer;
+SELECT * FROM neworders;
+DELETE FROM newcustomer;
+DELETE FROM neworders;
+
+--Task1_0520. 10개의 속성으로 구성되는 테이블 2개를 작성하세요. 단 FOREIGN KEY를 적용하여 한쪽 테이블의 데이터를 삭제 시 
+--다른 테이블의 관련되는 데이터도 모두 삭제되도록 하세요. (모든 제약조건을 사용)
+--단, 각 테이블에 5개의 데이터를 입력하고 두번째 테이블에 첫번째 데이터를 참조하고 있는 속성을 선택하여 데이터 삭제 
+DROP table mart;
+DROP table department;
 create table mart(
     custid number primary key
-    , name varchar(20)
+    , name varchar2(20)
     , age number
     , sx varchar2(20)
     , phone number not null
@@ -320,16 +470,17 @@ create table mart(
 );
 
 alter table mart drop column amount_num;
-alter table mart modify (name varchar2(20));
-alter table mart modify (phone varchar2(100));
+alter table mart modify (name varchar2(30));
+alter table mart modify (phone varchar2(20));
 
+DESC mart;
 insert into mart values(1, '고길동', 32, '남', '010-1234-1234', '서울 강남', 5, 1500000, 'N', 3);
 insert into mart values(2, '손흥민', 31, '남', '010-7777-1234', '강원 춘천', 5, 200000000, 'Y', 4);
 insert into mart values(3, '이순신', 57, '남', '010-1592-1234', '경남 통영', 5, 270000, 'N', 1);
 insert into mart values(4, '아이유', 30, '여', '010-0516-1234', '서울 서초', 5, 750000000, 'Y', 4);
+insert into mart values(5, '임영웅', 30, '남', '010-0517-1235', '서울 역삼', 5, 75000000, 'Y', 2);
 
 select * from mart;
-
 
 create table department(
     custid number primary key
@@ -356,11 +507,15 @@ select * from department;
 
 insert into department values(1, '손흥민', 31, '남', '010-7777-1234', '강원 춘천', 'LV', 900000000,'','');
 insert into department values(2, '아이유', 30, '여', '010-0516-1234', '서울 서초', 'GUCCI', 1500000000,'','');
+insert into department values(3, '박지성', 31, '남', '010-7775-1235', '강원 춘천', 'LV', 900000000,'','');
+insert into department values(4, '박세리', 30, '여', '010-0516-1234', '서울 서초', 'GUCCI', 1500000000,'','');
+insert into department values(5, '임영웅', 30, '남', '010-0517-1235', '서울 역삼', 'ROLEX', 150000000,'','');
 
-DELETE department
+DELETE mart
 WHERE custid = 1;
 
---table school, student
+--Q. Table school, student를 적절한 컬럼으로 생성한 후 기본키, 외래키를 설정하고 데이터을 입력한 후
+--기본키 삭제 시 외래키도 삭제되는 것을 확인하세요.
 CREATE TABLE school(
 schoolid NUMBER PRIMARY KEY,
 schoolname VARCHAR2(20) NOT NULL,
@@ -416,8 +571,12 @@ WHERE schoolid = 2;
 SELECT * FROM school;
 SELECT * FROM student;
 
+--[실습 - 2인 1조]
+--학교 관리를 위하여 테이블 2개 이상으로 db를 구축하고 3개 이상 활용할 수 있는 case를 만드세요.  
+
 --Q. ParentTable, ChildTable 2개를 작성하고 각 테이블의 속성은 4개(데이터 타입은 모두 다름)로 제약조건은 5개 이상 적용한다.
---ParentTable의 기본키에 대하여 ChildTable의 속성중 하나가 참조를 하는 외래키를 설정하고 특정 데이터를 삭제하면 모두 삭제가 되도록 한다.
+--ParentTable의 기본키에 대하여 ChildTable의 속성중 하나가 참조를 하는 외래키를 설정하고 특정 데이터를 삭제하면 
+--모두 삭제가 되도록 한다.
 --데이터는 각각 10개 이상 입력하고 다음을 수행한다.
 --데이터 전체 조회, 수정, 삭제 등을 통하여 원하는 그룹의 현금 금액을 도출한다.
 --VARCHAR2, CHAR, NUMBER, DATE, (DECIMAL, FLOAT, INTEGER, TIMESTAMP) 
@@ -559,77 +718,6 @@ from parents
 order by family_name;
 
 
-
-
-SELECT * FROM customer; 
-
-
---Q. Customer 테이블에서 박세리 고객의 주소를 김연아 고객의 주소로 변경하시오.
-UPDATE customer
-SET address = (
-    SELECT address
-    FROM customer
-    WHERE name = '김연아'
-)
-WHERE name = '박세리';
-
---확인
-select address, name
-from customer;
-
---다시 부산으로 변경
-update customer
-set address = '대한민국 부산'
-where name ='박세리';
---데이터 삽입
-INSERT INTO customer VALUES(11,'김연경','수원','000-1111-0001');
-
---데이터 삭제
-DELETE customer
-WHERE custid = 11;
-
-
-SELECT ABS(-78), ABS(+78)
-FROM dual;
-
-SELECT ROUND(4.875, 1)
-FROM dual;
- 
---Q. 고객별 평균 주문 금액을 백원 단위로 반올림한 값을 구하시오.
-SELECT * FROM orders;
-SELECT custid AS 고객번호, ROUND(AVG(saleprice), -2) AS 평균주문금액
-FROM orders
-GROUP BY custid;
-
---Q.도서 제목에 ‘야구’가 포함된 도서를 ‘농구’로 변경한 후 도서 목록, 가격을 보이시오.
-SELECT bookid, REPLACE(bookname, '야구','농구') bookname, publisher, price
-FROM book;
-
---Q.‘굿스포츠’에서 출판한 도서의 제목과 제목의 글자 수, 바이트 수를 보이시오.
-SELECT bookname 제목, length(bookname) 글자수, lengthb(bookname) 바이트수
-FROM book
-WHERE publisher = '굿스포츠';
-
-SELECT * FROM customer;
-INSERT INTO Customer VALUES (5, '박세리', '대한민국 대전', NULL);
-
---Q. 마당서점의 고객 중에서 같은 성(姓)을 가진 사람이 몇 명이나 되는지 성별 인원수를 구하시오.
-select substr(name,1,1) 성, count(*) 인원
-from customer
-group by substr(name,1,1);
-
---Q. 마당서점은 주문일로부터 10일 후 매출을 확정한다. 각 주문의 확정일자를 구하시오.
-SELECT orderid, orderdate AS 주문일, orderdate + 10 AS 확정일자
-FROM orders;
-
---Q.마당서점이 2020년 7월 7일에 주문받은 도서의 주문번호, 주문일, 고객번호, 도서번호를 모두 보이시오. 
---단 주문일은 ‘yyyy-mm-dd 요일’ 형태로 표시한다.
-SELECT orderid 주문번호, TO_CHAR(orderdate, 'YYYY-mm-dd day') 주문일, custid 고객번호, bookid 도서번호
---SELECT orderid 주문번호, orderdate 주문일, custid 고객번호, bookid 도서번호
-FROM orders
-WHERE orderdate = '2020-07-07';
-desc orders;
-
 SELECT SYSDATE FROM DUAL;
 
 --Q. DBMS 서버에 설정된 현재 날짜와 시간, 요일을 확인하시오.
@@ -648,15 +736,3 @@ select * from customer;
 SELECT rownum 순번, custid 고객번호, name 이름, phone 전화번호 
 FROM customer
 WHERE rownum < 3;
-
-SELECT * FROM orders;
-Q. 평균 주문금액 이하의 주문에 대해서 주문번호와 금액을 보이시오.
-select orderid, saleprice
-from orders
-where saleprice < (select avg(saleprice) from orders);
-
-
---Q. 대한민국’에 거주하는 고객에게 판매한 도서의 총 판매액을 구하시오.
-SELECT SUM(saleprice) AS 총판매액
-FROM orders
-WHERE custid IN (SELECT custid FROM customer WHERE address LIKE '%대한민국%');
