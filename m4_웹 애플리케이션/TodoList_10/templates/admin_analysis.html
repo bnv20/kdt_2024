@@ -1,0 +1,30 @@
+{% extends "base.html" %} 
+{% block title %}과제 준수 분석{% endblock %} 
+{% block header %}과제 준수 분석{% endblock %} 
+{% block content %}
+<h2 class="mt-4">사용자 과제 준수 분석</h2>
+<table class="table table-striped mt-3">
+  <thead>
+    <tr>
+      <th>사용자명</th>
+      <th>총 과제 수</th>
+      <th>시간 내 완료 과제 수</th>
+      <th>지연 과제 수</th>
+      <th>준수율</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in user_analysis %}
+    <tr>
+      <td>{{ user.username }}</td>
+      <td>{{ user.total_tasks }}</td>
+      <td>{{ user.tasks_on_time }}</td>
+      <td>{{ user.tasks_overdue }}</td>
+      <td>{{ user.compliance_rate }}%</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<a href="{{ url_for('admin') }}" class="btn btn-secondary mt-2">관리자 패널로 돌아가기</a>
+{% endblock %}

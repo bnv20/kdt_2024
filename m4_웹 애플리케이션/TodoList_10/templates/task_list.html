@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Task List{% endblock %}
+{% block header %}Task List{% endblock %}
+{% block content %}
+<table class="table table-striped mt-4">
+  <thead>
+    <tr>
+      <th class="text-left">Title</th>
+      <th class="text-left">Content</th>
+      <th class="text-left">Registration Date</th>
+      <th class="text-left">Due Date</th>
+      <th class="text-left">Status</th>
+      <th class="text-left">Download</th>
+      <th class="text-left">Edit</th>
+      <th class="text-left">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for task in tasks %}
+    <tr>
+      <td class="text-left"><strong>{{ task.title[:20] }}</strong></td>
+      <td class="text-left">
+        <a href="#" data-toggle="modal" data-target="#contentModal{{ task.id }}">
+          {{ task.contents[:20] }}...
+        </a>
+        <!-- Modal -->
+        <div class="modal fade" id="contentModal{{ task.id }}" tabindex="-1" role="dialog" aria-labelledby="contentModalLabel{{ task.id }}" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="contentModalLabel{{ task.id }}">Content Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                {{ task.contents }}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td class="text-left">{{ task.input_date.strftime('%Y-%m-%d') }}</td>
+      <td class="text-left">{{ task.due_date.strftime('%Y-%m-%d') }}</td>
+      <td class="text-left">
+        {% if task.completion_date %}
+          완료일: {{ task.completion_date.strftime('%Y-%m-%d') }}<br />
+          {% if task.days_remaining >= 0 %}
+          <p class="text-success">{{ task.status }}</p>
+          {% elif task.days_remaining == 0 %}
+          <p class="text-success">{{ task.status }}</p>
+          {% else %}
+          <p class="text-danger">{{ task.status }}</p>
+          {% endif %}
+        {% else %}
+          {% if task.days_remaining >= 0 %}
+          <p class="text-success">{{ task.status }}</p>
+          {% else %}
+          <p class="text-danger">{{ task.status }}</p>
+          {% endif %}
+        {% endif %}
+      </td>
+      <td class="text-left">
+        {% if task.file_path %}
+        <a href="{{ url_for('download_file', filename=task.file_path) }}" class="btn btn-info btn-sm">File</a>
+        {% endif %}
+      </td>
+      <td class="text-left">
+        <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-secondary btn-sm">Task</a>
+      </td>
+      <td class="text-left">
+        <a href="{{ url_for('delete_task', task_id=task.id) }}" class="btn btn-danger btn-sm">Task</a>
+      </td>       
+        
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Include Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

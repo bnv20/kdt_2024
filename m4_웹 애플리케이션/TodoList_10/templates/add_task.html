@@ -1,0 +1,26 @@
+{% extends "base.html" %} {% block title %}Add Task{% endblock %} {% block header %}Add Task{% endblock %} {% block content %}
+<form method="POST" action="{{ url_for('add_task') }}" class="mt-4" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+  <div class="form-group">
+    <label for="title">제목</label>
+    <input type="text" name="title" id="title" class="form-control" size="32" required />
+  </div>
+  <div class="form-group">
+    <label for="contents">내용</label>
+    <textarea name="contents" id="contents" class="form-control" rows="4" required></textarea>
+  </div>
+  <div class="form-group">
+    <label for="due_date">마감일</label>
+    <input type="date" name="due_date" id="due_date" class="form-control" required />
+  </div>
+  <div class="form-group">
+    <label for="completion_date">완수일</label>
+    <input type="date" name="completion_date" id="completion_date" class="form-control" />
+  </div>
+  <div class="form-group">
+    <label for="file">파일 업로드</label>
+    <input type="file" name="file" id="file" class="form-control" />
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

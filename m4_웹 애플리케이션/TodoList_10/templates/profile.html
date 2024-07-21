@@ -1,0 +1,15 @@
+{% extends "base.html" %} {% block title %}Profile{% endblock %} {% block header %}Profile{% endblock %} {% block content %}
+<form method="POST" action="">
+  <!--  현재 페이지의 URL을 사용하려면 action 속성을 비워둔다.-->
+  {{ form.hidden_tag() }}
+  <div class="form-group">{{ form.username.label(class="form-label") }} {{ form.username(class="form-control") }}</div>
+  <div class="form-group">{{ form.email.label(class="form-label") }} {{ form.email(class="form-control") }}</div>
+  <div class="form-group">{{ form.password.label(class="form-label") }} {{ form.password(class="form-control") }}</div>
+  <div class="form-group">{{ form.confirm_password.label(class="form-label") }} {{ form.confirm_password(class="form-control") }}</div>
+  <button type="submit" class="btn btn-primary">Update</button>
+</form>
+<form method="POST" action="{{ url_for('delete_account') }}">
+  {{ form.hidden_tag() }}
+  <button type="submit" class="btn btn-danger mt-3">Delete Account</button>
+</form>
+{% endblock %}
