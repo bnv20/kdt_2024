@@ -1,1 +1,53 @@
+/* 기본 스타일 */
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding-top: 70px; /* Navbar 높이만큼 패딩 추가 */
+}
 
+/* 첫 페이지에만 배경 이미지 적용 */
+.home-background {
+  background: url("/static/images/bg1.png") no-repeat center center fixed;
+  background-size: cover;
+  flex: 1;
+}
+
+/* 네비게이션 바 스타일 */
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.5em; /* 글자 크기 조정 */
+}
+
+.nav-link {
+  font-size: 1.2em; /* 글자 크기 조정 */
+}
+
+/* 네비게이션 바 마진 */
+.navbar-nav {
+  margin-left: auto;
+}
+
+/* 커스텀 파일 업로드 버튼 스타일 */
+.btn-secondary {
+  cursor: pointer;
+}
+
+/* 컨텐츠 스타일 */
+.container {
+  flex: 1;
+  padding-bottom: 60px; /* Footer 높이만큼 패딩 추가 */
+}
+
+/* 푸터 스타일 */
+footer {
+  text-align: center;
+  padding: 10px 0;
+  background-color: #f6f6fa;
+  width: 100%;
+  color: #0f0e0e;
+  position: relative;
+  bottom: 0;
+}
